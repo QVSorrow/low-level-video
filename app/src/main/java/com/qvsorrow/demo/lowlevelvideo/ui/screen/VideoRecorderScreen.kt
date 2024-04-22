@@ -37,6 +37,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.FileProvider
 import com.qvsorrow.demo.lowlevelvideo.Page
 import com.qvsorrow.demo.lowlevelvideo.core.AUTHORITY
+import com.qvsorrow.demo.lowlevelvideo.core.openVideoUri
 import com.qvsorrow.demo.lowlevelvideo.recorder.VideoRecorder
 import com.qvsorrow.demo.lowlevelvideo.renderer.ColorAnimationRenderer
 import com.qvsorrow.demo.lowlevelvideo.renderer.toSurfaceHolderCallback
@@ -116,17 +117,7 @@ private fun SceneRecording(navController: NavController<Page>) {
 }
 
 
-private fun openVideoUri(context: Context, uri: Uri, isSend: Boolean) {
-    val viewIntent = Intent().apply {
-        type = "video/mp4"
-        action = if (isSend) Intent.ACTION_SEND else Intent.ACTION_VIEW
-        putExtra(Intent.EXTRA_STREAM, uri)
-        flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-        clipData = ClipData.newRawUri("Video", uri)
-    }
-    val chooserIntent = Intent.createChooser(viewIntent, "Open video")
-    context.startActivity(chooserIntent)
-}
+
 
 
 
