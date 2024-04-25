@@ -73,7 +73,7 @@ fun VideoPlayerScreen(navController: NavController<Page>, videoUri: Uri?) {
                 append("android.resource://")
                     .append(localContext.applicationContext.packageName)
                     .append("/")
-                    .append(R.raw.reel_demo)
+                    .append(R.raw.sample)
             }
         ), modifier = Modifier.wrapContentSize())
     }

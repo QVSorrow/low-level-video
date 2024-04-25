@@ -38,12 +38,15 @@ import androidx.core.content.FileProvider
 import com.qvsorrow.demo.lowlevelvideo.Page
 import com.qvsorrow.demo.lowlevelvideo.core.AUTHORITY
 import com.qvsorrow.demo.lowlevelvideo.core.openVideoUri
+import com.qvsorrow.demo.lowlevelvideo.core.saver
 import com.qvsorrow.demo.lowlevelvideo.recorder.VideoRecorder
 import com.qvsorrow.demo.lowlevelvideo.renderer.ColorAnimationRenderer
 import com.qvsorrow.demo.lowlevelvideo.renderer.toSurfaceHolderCallback
 import com.qvsorrow.demo.lowlevelvideo.ui.components.ScaffoldScreen
 import com.qvsorrow.demo.lowlevelvideo.ui.navigation.NavController
 import com.qvsorrow.demo.lowlevelvideo.ui.resources.Strings
+import kotlinx.coroutines.flow.collectLatest
+import kotlin.time.Duration
 
 
 @Composable
@@ -59,10 +62,23 @@ private fun SceneRecording(navController: NavController<Page>) {
     val context = LocalContext.current
     val renderer = remember { ColorAnimationRenderer() }
 
-    val rendererFrames by renderer.rendererFrames.collectAsState()
-    val duration by renderer.duration.collectAsState()
+
+    var rendererFrames by rememberSaveable { mutableIntStateOf(0) }
+    var duration by rememberSaveable(stateSaver = Duration.saver) {
+        mutableStateOf(Duration.ZERO)
+    }
 
     var videoFile by rememberSaveable { mutableStateOf<Uri?>(null) }
+
+    LaunchedEffect(Unit) {
+        if (videoFile != null) return@LaunchedEffect
+        renderer.rendererFrames.collectLatest { rendererFrames = it }
+    }
+
+    LaunchedEffect(videoFile) {
+        if (videoFile != null) return@LaunchedEffect
+        renderer.duration.collectLatest { duration = it }
+    }
 
     Box(
         modifier = Modifier
@@ -104,7 +120,8 @@ private fun SceneRecording(navController: NavController<Page>) {
     }
 
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(videoFile) {
+        if (videoFile != null) return@LaunchedEffect
         val videoRecorder = VideoRecorder(context)
         val deferred = videoRecorder.record(720, 1280, renderer)
         val file = deferred.await()
